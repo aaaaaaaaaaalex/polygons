@@ -16,6 +16,10 @@ export class BufferZone extends LitElement {
             padding: 25px 40px;
             margin-bottom: 15px;
         }
+        .toolbar__right {
+            display: flex;
+            gap: 20px;
+        }
         svg {
             display: block;
             width: 100%;
@@ -40,6 +44,20 @@ export class BufferZone extends LitElement {
         const list = randPolygons(5 + Math.floor(Math.random() * 16));
         this.dispatchEvent(new CustomEvent('polygons-created', {
             detail: list,
+            bubbles: true,
+            composed: true
+        }));
+    }
+
+    _save() {
+        this.dispatchEvent(new CustomEvent('polygons-save', {
+            bubbles: true,
+            composed: true
+        }));
+    }
+
+    _reset() {
+        this.dispatchEvent(new CustomEvent('polygons-reset', {
             bubbles: true,
             composed: true
         }));
@@ -118,7 +136,13 @@ export class BufferZone extends LitElement {
     render() {
         return html`
             <div class="toolbar">
-                <app-button label="Создать" @click=${this._create}></app-button>
+                <div class="toolbar__left">
+                    <app-button label="Создать" @click=${this._create}></app-button>
+                </div>
+                <div class="toolbar__right">
+                    <app-button label="Сохранить" @click=${this._save}></app-button>
+                    <app-button label="Сбросить" @click=${this._reset}></app-button>
+                </div>
             </div>
 
             <svg viewBox="0 0 1000 400" @dragstart=${(e) => e.preventDefault()}>

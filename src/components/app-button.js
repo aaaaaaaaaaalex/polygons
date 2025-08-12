@@ -15,6 +15,7 @@ export class AppButton extends LitElement {
             background-color: var(--gray);
             color: var(--black);
             cursor: pointer;
+            font-weight: 600;
         }
   `;
 

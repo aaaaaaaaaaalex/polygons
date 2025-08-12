@@ -34,13 +34,25 @@ export class PolygonsApp extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
+        const bufferPolygons = localStorage.getItem('polygons-buffer');
+        const workPolygons = localStorage.getItem('polygons-work');
+        if (bufferPolygons) {
+            this.bufferPolygons = JSON.parse(bufferPolygons);
+        }
+        if (workPolygons) {
+            this.workPolygons = JSON.parse(workPolygons);
+        }
         this.addEventListener('polygons-created', this._onPolygonsCreated);
+        this.addEventListener('polygons-save', this._onPolygonsSave);
+        this.addEventListener('polygons-reset', this._onPolygonsReset);
         this.addEventListener('polygon-move-to-work', this._onPolygonMoveToWork);
         this.addEventListener('polygon-move-to-buffer', this._onPolygonMoveToBuffer);
     }
 
     disconnectedCallback() {
         this.removeEventListener('polygons-created', this._onPolygonsCreated);
+        this.removeEventListener('polygons-save', this._onPolygonsSave);
+        this.removeEventListener('polygons-reset', this._onPolygonsReset);
         this.removeEventListener('polygon-move-to-work', this._onPolygonMoveToWork);
         this.removeEventListener('polygon-move-to-buffer', this._onPolygonMoveToBuffer);
         super.disconnectedCallback();
@@ -48,6 +60,16 @@ export class PolygonsApp extends LitElement {
 
     _onPolygonsCreated = (e) => {
         this.bufferPolygons = e.detail;
+    }
+
+    _onPolygonsSave = () => {
+        localStorage.setItem('polygons-buffer', JSON.stringify(this.bufferPolygons));
+        localStorage.setItem('polygons-work', JSON.stringify(this.workPolygons));
+    }
+
+    _onPolygonsReset = () => {
+        localStorage.removeItem('polygons-buffer');
+        localStorage.removeItem('polygons-work');
     }
 
     _onPolygonMoveToWork = (e) => {
