@@ -104,7 +104,7 @@ export class BufferZone extends LitElement {
 
             const detail = this.draggedPoly;
 
-            this.dispatchEvent(new CustomEvent('polygon-dropped', {
+            this.dispatchEvent(new CustomEvent('polygon-move-to-work', {
                 detail,
                 bubbles: true,
                 composed: true,

@@ -34,16 +34,32 @@ export class PolygonsApp extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
+        this.addEventListener('polygons-created', this._onPolygonsCreated);
+        this.addEventListener('polygon-move-to-work', this._onPolygonMoveToWork);
+        this.addEventListener('polygon-move-to-buffer', this._onPolygonMoveToBuffer);
+    }
 
-        this.addEventListener('polygons-created', (e) => {
-            this.bufferPolygons = [...this.bufferPolygons, ...e.detail];
-        });
+    disconnectedCallback() {
+        this.removeEventListener('polygons-created', this._onPolygonsCreated);
+        this.removeEventListener('polygon-move-to-work', this._onPolygonMoveToWork);
+        this.removeEventListener('polygon-move-to-buffer', this._onPolygonMoveToBuffer);
+        super.disconnectedCallback();
+    }
 
-        this.addEventListener('polygon-dropped', (e) => {
-            const poly = e.detail;
-            this.bufferPolygons = this.bufferPolygons.filter(p => p.id !== poly.id);
-            this.workPolygons = [...this.workPolygons, poly];
-        });
+    _onPolygonsCreated = (e) => {
+        this.bufferPolygons = e.detail;
+    }
+
+    _onPolygonMoveToWork = (e) => {
+        const poly = e.detail;
+        this.bufferPolygons = this.bufferPolygons.filter(p => p !== poly);
+        this.workPolygons = [...this.workPolygons, poly];
+    }
+
+    _onPolygonMoveToBuffer = (e) => {
+        const poly = e.detail;
+        this.workPolygons = this.workPolygons.filter(p => p !== poly);
+        this.bufferPolygons = [...this.bufferPolygons, poly];
     }
 
     render() {
