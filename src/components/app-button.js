@@ -8,7 +8,7 @@ export class AppButton extends LitElement {
 
     static styles = css`
         button {
-            padding: 8px 16px;
+            padding: 8px 24px;
             font-size: 1rem;
             border: none;
             border-radius: 4px;

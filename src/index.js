@@ -1,1 +1,1 @@
-import './components/app-root.js';
+import './components/root.js';
