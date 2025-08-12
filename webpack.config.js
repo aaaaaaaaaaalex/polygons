@@ -6,11 +6,11 @@ module.exports = {
     entry: './src/index.js',
     output: {
         filename: 'bundle.js',
-        path: path.resolve(__dirname, 'dist'),
+        path: path.resolve(__dirname, 'docs'),
         clean: true,
     },
     devServer: {
-        static: './dist',
+        static: './docs',
         port: 3000,
         hot: true,
     },
