@@ -28,6 +28,7 @@ export class WorkZone extends LitElement {
         super();
         this.polygons = [];
         this.vb = { x: 0, y: 0, w: 1000, h: 400 };
+        this.initialVbHeight = this.vb.h;
         this._isPanning = false;
         this._last = null;
     }
@@ -170,24 +171,62 @@ export class WorkZone extends LitElement {
         for (let y = Math.floor(this.vb.y); y < this.vb.y + this.vb.h; y += yStep) yTicks.push(y);
 
         const vb = `${this.vb.x} ${this.vb.y} ${this.vb.w} ${this.vb.h}`;
+        const scale = this.initialVbHeight / this.vb.h;
+        const fontSize = 12;
+        const strokeWidth = 1;
 
         return html`
-            <svg viewBox=${vb} @dragstart=${(e) => e.preventDefault()}>
-                <!-- axes -->
+            <svg viewBox=${vb} @dragstart=${e => e.preventDefault()}>
                 <g class="axes">
-                    ${xTicks.map(x => svg`<line class="axis" x1=${x} y1=${this.vb.y} x2=${x} y2=${this.vb.y + this.vb.h} stroke="#FFF"></line>
-                    <text x=${x + 2} y=${this.vb.y + 12} font-size="12" fill="#FFF">${Math.round(x)}</text>`)}
-                    ${yTicks.map(y => svg`<line class="axis" x1=${this.vb.x} y1=${y} x2=${this.vb.x + this.vb.w} y2=${y} stroke="#FFF"></line>
-                    <text x=${this.vb.x + 4} y=${y - 2} font-size="12" fill="#FFF">${Math.round(y)}</text>`)}
+                    ${xTicks.map(x => svg`
+                        <!-- Вертикальная линия -->
+                        <line 
+                            x1=${x} y1=${this.vb.y}
+                            x2=${x} y2=${this.vb.y + this.vb.h}
+                            stroke="#FFF"
+                            stroke-width=${strokeWidth / scale}
+                        ></line>
+                        <!-- Подпись -->
+                        <g transform="translate(${x}, ${this.vb.y + fontSize / scale}) scale(${1 / scale})">
+                            <text 
+                                x="2" 
+                                y="0" 
+                                font-size=${fontSize} 
+                                fill="#FFF"
+                            >
+                                ${Math.round(x)}
+                            </text>
+                        </g>
+                    `)}
+
+                    ${yTicks.map(y => svg`
+                        <!-- Горизонтальная линия -->
+                        <line 
+                            x1=${this.vb.x} y1=${y}
+                            x2=${this.vb.x + this.vb.w} y2=${y}
+                            stroke="#FFF"
+                            stroke-width=${strokeWidth / scale}
+                        ></line>
+                        <!-- Подпись -->
+                        <g transform="translate(${this.vb.x + 4 / scale}, ${y}) scale(${1 / scale})">
+                            <text 
+                                x="0" 
+                                y="-2" 
+                                font-size=${fontSize} 
+                                fill="#FFF"
+                            >
+                                ${Math.round(y)}
+                            </text>
+                        </g>
+                    `)}
                 </g>
 
-                <!-- polygons -->
                 ${this.polygons.map(poly => svg`
                     <polygon 
                         points=${poly.pointsStr}
                         fill=${poly.fill}
                         stroke=${poly.stroke}
-                        stroke-width="1"
+                        stroke-width=${1 / scale}
                         @pointerdown=${(e) => this._onPointerDown(e, poly)}
                     ></polygon>
                 `)}
