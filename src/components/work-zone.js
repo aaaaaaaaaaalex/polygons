@@ -101,8 +101,8 @@ export class WorkZone extends LitElement {
         this.clone = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.clone.setAttribute("viewBox", "0 0 1000 400");
         this.clone.style.position = "absolute";
-        this.clone.style.left = `${e.clientX - this.offsetX}px`;
-        this.clone.style.top = `${e.clientY - this.offsetY}px`;
+        this.clone.style.left = `${e.clientX - this.offsetX + window.scrollX}px`;
+        this.clone.style.top = `${e.clientY - this.offsetY + window.scrollY}px`;
         this.clone.style.width = svgRect.width + "px";
         this.clone.style.height = svgRect.height + "px";
         this.clone.style.pointerEvents = "none";
@@ -125,9 +125,9 @@ export class WorkZone extends LitElement {
     }
 
     onPointerMove = (e) => {
-        this.clone.style.left = `${e.clientX - this.offsetX}px`;
-        this.clone.style.top = `${e.clientY - this.offsetY}px`;
-    }
+        this.clone.style.left = `${e.clientX - this.offsetX + window.scrollX}px`;
+        this.clone.style.top = `${e.clientY - this.offsetY + window.scrollY}px`;
+    };
 
     onPointerUp = (e) => {
         if (this.clone) {
