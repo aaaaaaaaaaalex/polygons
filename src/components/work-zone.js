@@ -94,6 +94,9 @@ export class WorkZone extends LitElement {
         this.offsetY = e.clientY - svgRect.top;
 
         this.draggedPoly = poly;
+        this.polygons = this.polygons.filter(p => p !== poly);
+        this.requestUpdate();
+
         this.clone = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.clone.setAttribute("viewBox", "0 0 1000 400");
         this.clone.style.position = "absolute";
@@ -150,6 +153,9 @@ export class WorkZone extends LitElement {
                 bubbles: true,
                 composed: true,
             }));
+        } else {
+            this.polygons = [...this.polygons, this.draggedPoly];
+            this.requestUpdate();
         }
 
         this.draggedPoly = null;
