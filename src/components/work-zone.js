@@ -1,5 +1,7 @@
 import { LitElement, html, svg, css } from 'lit';
 
+import { isInZone } from '../utils.js';
+
 export class WorkZone extends LitElement {
     static styles = css`
         :host {
@@ -16,7 +18,7 @@ export class WorkZone extends LitElement {
             user-select: none;
         }
         polygon {
-            cursor: pointer;
+            cursor: grab;
         }
     `;
 
@@ -130,33 +132,63 @@ export class WorkZone extends LitElement {
     };
 
     onPointerUp = (e) => {
-        if (this.clone) {
-            this.clone.remove();
-            this.clone = null;
-        }
+        if (!this.draggedPoly) return;
+
         window.removeEventListener("pointermove", this.onPointerMove);
         window.removeEventListener("pointerup", this.onPointerUp);
 
         const polygonsApp = document.querySelector('polygons-app');
         const bufferZone = polygonsApp.shadowRoot.querySelector('buffer-zone');
 
-        if (!bufferZone) return;
+        const workZoneSvg = this.shadowRoot.querySelector('svg');
+        const workZoneSvgRect = workZoneSvg.getBoundingClientRect();
 
-        const rect = bufferZone.getBoundingClientRect();
+        const bufferZoneSvg = bufferZone.shadowRoot.querySelector('svg');
+        const bufferZoneSvgRect = bufferZoneSvg.getBoundingClientRect();
 
-        if (e.clientX >= rect.left && e.clientX <= rect.right &&
-            e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        if (isInZone(e, workZoneSvgRect)) {
+            const cloneRect = this.clone.getBoundingClientRect();
+            const offsetX = cloneRect.left - workZoneSvgRect.left;
+            const offsetY = cloneRect.top - workZoneSvgRect.top;
 
-            const detail = this.draggedPoly;
+            const newPoints = this.draggedPoly.points.map(pt => ({
+                x: pt.x + (offsetX / workZoneSvgRect.width) * this.vb.w,
+                y: pt.y + (offsetY / workZoneSvgRect.height) * this.vb.h
+            }));
+
+            this.draggedPoly.points = newPoints;
+            this.draggedPoly.pointsStr = newPoints.map(pt => `${pt.x},${pt.y}`).join(" ");
+
+            this.polygons = [...this.polygons, this.draggedPoly];
+            this.requestUpdate();
+        } else if (isInZone(e, bufferZoneSvgRect)) {
+            const cloneRect = this.clone.getBoundingClientRect();
+            const offsetX = cloneRect.left - bufferZoneSvgRect.left;
+            const offsetY = cloneRect.top - bufferZoneSvgRect.top;
+
+            const bufferVB = bufferZoneSvg.viewBox.baseVal;
+
+            const newPoints = this.draggedPoly.points.map(pt => ({
+                x: pt.x + (offsetX / bufferZoneSvgRect.width) * bufferVB.width,
+                y: pt.y + (offsetY / bufferZoneSvgRect.height) * bufferVB.height
+            }));
+
+            this.draggedPoly.points = newPoints;
+            this.draggedPoly.pointsStr = newPoints.map(pt => `${pt.x},${pt.y}`).join(" ");
 
             this.dispatchEvent(new CustomEvent('polygon-move-to-buffer', {
-                detail,
+                detail: this.draggedPoly,
                 bubbles: true,
                 composed: true,
             }));
         } else {
             this.polygons = [...this.polygons, this.draggedPoly];
             this.requestUpdate();
+        }
+
+        if (this.clone) {
+            this.clone.remove();
+            this.clone = null;
         }
 
         this.draggedPoly = null;

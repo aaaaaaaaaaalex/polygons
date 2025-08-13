@@ -26,3 +26,10 @@ export function randPolygons(count = 5) {
     }
     return list;
 }
+
+export function isInZone(e, rect) {
+    return e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+}

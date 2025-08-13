@@ -1,6 +1,6 @@
 import { LitElement, html, svg, css } from 'lit';
 import './app-button';
-import { randPolygons } from '../utils.js';
+import { randPolygons, isInZone } from '../utils.js';
 
 export class BufferZone extends LitElement {
     static styles = css`
@@ -38,6 +38,7 @@ export class BufferZone extends LitElement {
     constructor() {
         super();
         this.polygons = [];
+        this.vb = { x: 0, y: 0, w: 1000, h: 400 };
     }
 
     _create() {
@@ -106,27 +107,52 @@ export class BufferZone extends LitElement {
     };
 
     onPointerUp = (e) => {
-        if (this.clone) {
-            this.clone.remove();
-            this.clone = null;
-        }
+        if (!this.draggedPoly) return;
+
         window.removeEventListener("pointermove", this.onPointerMove);
         window.removeEventListener("pointerup", this.onPointerUp);
 
         const polygonsApp = document.querySelector('polygons-app');
         const workZone = polygonsApp.shadowRoot.querySelector('work-zone');
 
-        if (!workZone) return;
+        const bufferZoneSvg = this.shadowRoot.querySelector('svg');
+        const bufferZoneSvgRect = bufferZoneSvg.getBoundingClientRect();
 
-        const rect = workZone.getBoundingClientRect();
+        const workZoneSvg = workZone.shadowRoot.querySelector('svg');
+        const workZoneSvgRect = workZoneSvg.getBoundingClientRect();
 
-        if (e.clientX >= rect.left && e.clientX <= rect.right &&
-            e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        if (isInZone(e, bufferZoneSvgRect)) {
+            const cloneRect = this.clone.getBoundingClientRect();
+            const offsetX = cloneRect.left - bufferZoneSvgRect.left;
+            const offsetY = cloneRect.top - bufferZoneSvgRect.top;
 
-            const detail = this.draggedPoly;
+            const newPoints = this.draggedPoly.points.map(pt => ({
+                x: pt.x + (offsetX / bufferZoneSvgRect.width) * this.vb.w,
+                y: pt.y + (offsetY / bufferZoneSvgRect.height) * this.vb.h
+            }));
+
+            this.draggedPoly.points = newPoints;
+            this.draggedPoly.pointsStr = newPoints.map(pt => `${pt.x},${pt.y}`).join(" ");
+
+            this.polygons = [...this.polygons, this.draggedPoly];
+            this.requestUpdate();
+        } else if (isInZone(e, workZoneSvgRect)) {
+            const cloneRect = this.clone.getBoundingClientRect();
+            const offsetX = cloneRect.left - workZoneSvgRect.left;
+            const offsetY = cloneRect.top - workZoneSvgRect.top;
+
+            const workVB = workZoneSvg.viewBox.baseVal;
+
+            const newPoints = this.draggedPoly.points.map(pt => ({
+                x: pt.x + (offsetX / workZoneSvgRect.width) * workVB.width,
+                y: pt.y + (offsetY / workZoneSvgRect.height) * workVB.height
+            }));
+
+            this.draggedPoly.points = newPoints;
+            this.draggedPoly.pointsStr = newPoints.map(pt => `${pt.x},${pt.y}`).join(" ");
 
             this.dispatchEvent(new CustomEvent('polygon-move-to-work', {
-                detail,
+                detail: this.draggedPoly,
                 bubbles: true,
                 composed: true,
             }));
@@ -135,9 +161,13 @@ export class BufferZone extends LitElement {
             this.requestUpdate();
         }
 
+        if (this.clone) {
+            this.clone.remove();
+            this.clone = null;
+        }
+
         this.draggedPoly = null;
     }
-
 
     render() {
         return html`
