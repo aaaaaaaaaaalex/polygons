@@ -117,7 +117,8 @@ export class WorkZone extends LitElement {
         p.setAttribute("points", poly.pointsStr);
         p.setAttribute("fill", poly.fill);
         p.setAttribute("stroke", "#FFF");
-        p.setAttribute("stroke-width", "2");
+        p.setAttribute("stroke-width", "1");
+        p.style.opacity = "0.9";
 
         this.clone.appendChild(p);
         document.body.appendChild(this.clone);
