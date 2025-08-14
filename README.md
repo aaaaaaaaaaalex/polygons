@@ -1,6 +1,6 @@
 # Простое приложение для работы с svg-полигонами
 
-Приложение написано на web-components
+Приложение написано на web-components.
 [Ссылка на работающее приложение](https://aaaaaaaaaaalex.github.io/polygons/)
 
 ## Функционал
